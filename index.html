@@ -23,14 +23,109 @@ const diff=c=>c.price-c.fipe;const signed=n=>(n>0?'+':'−')+money(Math.abs(n));
 function renderCars(){document.querySelector('#cars').innerHTML=cars.map((c,i)=>'<article class="card"><img class="carimg" src="'+c.image+'" alt="'+c.name+'" loading="lazy"><div class="body"><span class="pill">📅 '+c.year+'</span><h3>'+c.name+'</h3><div class="price">'+money(c.price)+'</div><div class="muted">FIPE de referência: '+money(c.fipe)+'</div><div class="muted">Diferença anúncio − FIPE: <b>'+signed(diff(c))+'</b></div><div class="muted">Foto: <a href="'+c.source+'" target="_blank" rel="noopener">'+c.credit+' ↗</a></div><div class="actions"><button class="btn primary" onclick="toggleDetail('+i+')">📋 Ficha completa</button><button class="btn dark" onclick="startQuiz('+i+')">🎯 Treinar modelo</button></div></div><div class="detail" id="detail'+i+'"><div class="warning">⚠️ '+c.fipeNote+' A diferença é apenas matemática entre o preço anunciado e a referência informada, não uma avaliação oficial.</div><h4>⚙️ Motor e transmissão</h4><div class="specgrid">'+[['Motor',c.engine],['Cilindrada',c.cc],['Potência',c.power],['Torque',c.torque],['Combustível',c.fuel],['Câmbio',c.gear],['Tração',c.drive],['Porta-malas',c.trunk],['Tanque',c.tank],['Lugares',c.seats],['Altura do solo',c.ground]].map(x=>'<div class="spec"><b>'+x[0]+'</b><br>'+x[1]+'</div>').join('')+'</div><h4>💬 Argumentos de venda</h4><ul>'+c.selling.map(x=>'<li>'+x+'</li>').join('')+'</ul><h4>🔎 O que conferir</h4><ul>'+c.care.map(x=>'<li>'+x+'</li>').join('')+'</ul><div class="callout"><b>Resumo:</b> '+c.highlight+'</div></div></article>').join('')}
 function toggleDetail(i){document.querySelector('#detail'+i).classList.toggle('open')}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab))});
-let qi=0,qAnswered=false,qOrder=[];
-function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
-function startQuiz(i){document.querySelector('[data-tab="quiz"]').click();qOrder=shuffle(cars);if(i!==undefined)qOrder=[cars[i],...shuffle(cars.filter(c=>c.id!==cars[i].id))];qi=0;showQuiz()}
-function showQuiz(){qAnswered=false;const c=qOrder[qi%qOrder.length];document.querySelector('#qCount').textContent='Pergunta '+(qi+1)+' / '+qOrder.length;document.querySelector('#qProgress').style.width=((qi+1)/qOrder.length*100)+'%';document.querySelector('#qImg').src=c.image;document.querySelector('#qTitle').textContent='Qual é o modelo/versão deste veículo?';document.querySelector('#qFeedback').textContent='';document.querySelector('#qNext').disabled=true;const opts=shuffle([c,...shuffle(cars.filter(x=>x.id!==c.id)).slice(0,3)]);document.querySelector('#qOptions').innerHTML=opts.map(o=>'<button class="option" data-id="'+o.id+'">'+o.name+'</button>').join('');document.querySelectorAll('#qOptions .option').forEach(b=>b.onclick=()=>{if(qAnswered)return;qAnswered=true;document.querySelectorAll('#qOptions .option').forEach(x=>{x.disabled=true;if(x.dataset.id===c.id)x.classList.add('correct')});if(b.dataset.id!==c.id)b.classList.add('wrong');document.querySelector('#qFeedback').textContent=b.dataset.id===c.id?'✅ Correto! '+c.highlight:'❌ A resposta certa é '+c.name+'. '+c.highlight;document.querySelector('#qNext').disabled=false})}
-document.querySelector('#qNext').onclick=()=>{qi++;if(qi>=qOrder.length)qi=0;showQuiz()};document.querySelector('#qRestart').onclick=()=>startQuiz();
+
+// O quiz evita mostrar a marca nas alternativas de identificação: o emblema da foto já pode revelar essa informação.
+const categoryById={
+  compass:{category:'SUV médio',use:'Família, viagens e uso diário',engineType:'1.3 turbo flex',drive:'Dianteira (4x2)'},
+  fastback:{category:'SUV cupê compacto',use:'Uso diário, casal/família pequena e bagagem',engineType:'1.0 turbo flex',drive:'Dianteira (4x2)'},
+  cretaLimited:{category:'SUV compacto',use:'Família e uso urbano',engineType:'1.0 turbo flex',drive:'Dianteira (4x2)'},
+  tracker:{category:'SUV compacto',use:'Família e uso urbano',engineType:'1.0 turbo flex (confirmar versão)',drive:'Dianteira (4x2)'},
+  hb20s:{category:'Sedã compacto',use:'Uso diário, trabalho e bagagem',engineType:'1.0 aspirado flex',drive:'Dianteira (4x2)'},
+  cretaUltimate:{category:'SUV compacto premium',use:'Família, viagens e conforto',engineType:'1.6 turbo TGDI',drive:'Dianteira (4x2)'}
+};
+function uniqueValues(values){return [...new Set(values.filter(Boolean))]}
+function questionBank(){
+ const qs=[];
+ cars.forEach(c=>{
+  const meta=categoryById[c.id];
+  qs.push({car:c,type:'model',q:'Sem olhar a marca: qual é o modelo e a versão deste veículo?',answer:c.short,options:cars.map(x=>x.short)});
+  qs.push({car:c,type:'engine',q:'Qual é a motorização deste veículo?',answer:c.engine,options:cars.map(x=>x.engine)});
+  qs.push({car:c,type:'torque',q:'Qual é o torque informado para esta versão?',answer:c.torque,options:cars.map(x=>x.torque)});
+  qs.push({car:c,type:'trunk',q:'Qual é a capacidade aproximada do porta-malas?',answer:c.trunk,options:cars.map(x=>x.trunk)});
+  qs.push({car:c,type:'gear',q:'Qual é o tipo de câmbio deste veículo?',answer:c.gear,options:cars.map(x=>x.gear)});
+  qs.push({car:c,type:'category',q:'Em qual categoria este veículo se encaixa?',answer:meta.category,options:Object.values(categoryById).map(x=>x.category)});
+  qs.push({car:c,type:'use',q:'Qual perfil de uso combina melhor com este veículo?',answer:meta.use,options:Object.values(categoryById).map(x=>x.use)});
+  qs.push({car:c,type:'fuel',q:'Qual é o combustível deste veículo?',answer:c.fuel,options:cars.map(x=>x.fuel)});
+  qs.push({car:c,type:'power',q:'Qual é a potência indicada para esta versão?',answer:c.power,options:cars.map(x=>x.power)});
+  qs.push({car:c,type:'drive',q:'Qual é a tração indicada para este veículo?',answer:meta.drive,options:Object.values(categoryById).map(x=>x.drive)});
+ });
+ return qs;
+}
+function optionsFor(q){
+ const pool=uniqueValues(q.options.filter(x=>x!==q.answer));
+ const chosen=shuffle(pool).slice(0,3);
+ while(chosen.length<3){
+  const fallback=uniqueValues(cars.map(c=>c.short)).find(x=>x!==q.answer&&!chosen.includes(x));
+  if(!fallback)break;chosen.push(fallback);
+ }
+ return shuffle([q.answer,...chosen]);
+}
+let qi=0,qAnswered=false,qOrder=[],qScore=0,qTotal=0;
+function startQuiz(){
+ document.querySelector('[data-tab="quiz"]').click();
+ qOrder=shuffle(questionBank());qi=0;qScore=0;qTotal=qOrder.length;showQuiz();
+}
+function showQuiz(){
+ qAnswered=false;const q=qOrder[qi],c=q.car;
+ document.querySelector('#qCount').textContent='Pergunta '+(qi+1)+' / '+qOrder.length+' • Acertos: '+qScore;
+ document.querySelector('#qProgress').style.width=((qi+1)/qOrder.length*100)+'%';
+ document.querySelector('#qImg').src=c.image;
+ document.querySelector('#qTitle').textContent=q.q;
+ document.querySelector('#qFeedback').textContent='';
+ document.querySelector('#qNext').disabled=true;
+ document.querySelector('#qNext').textContent=qi===qOrder.length-1?'Ver resultado':'Próxima →';
+ document.querySelector('#qOptions').innerHTML=optionsFor(q).map(o=>'<button class="option" data-answer="'+encodeURIComponent(o)+'">'+o+'</button>').join('');
+ document.querySelectorAll('#qOptions .option').forEach(b=>b.onclick=()=>{
+  if(qAnswered)return;qAnswered=true;const picked=decodeURIComponent(b.dataset.answer),ok=picked===q.answer;if(ok)qScore++;
+  document.querySelectorAll('#qOptions .option').forEach(x=>{x.disabled=true;if(decodeURIComponent(x.dataset.answer)===q.answer)x.classList.add('correct')});
+  if(!ok)b.classList.add('wrong');
+  const extra=q.type==='model'?c.highlight:
+    q.type==='category'?'Dica de venda: identifique primeiro o porte e o formato da carroceria; depois relacione com o perfil do cliente.':
+    q.type==='use'?'Argumento de venda: descubra se o cliente prioriza espaço, economia, conforto, desempenho ou facilidade para estacionar.':
+    'Use a ficha técnica como referência e confirme a especificação da unidade pelo ano/modelo, manual e chassi.';
+  document.querySelector('#qFeedback').textContent=(ok?'✅ Correto! ':'❌ Resposta certa: '+q.answer+'. ')+extra;
+  document.querySelector('#qCount').textContent='Pergunta '+(qi+1)+' / '+qOrder.length+' • Acertos: '+qScore;
+  document.querySelector('#qNext').disabled=false;
+ });
+}
+document.querySelector('#qNext').onclick=()=>{
+ if(qi>=qOrder.length-1){
+  document.querySelector('#qTitle').textContent='🏁 Quiz concluído: '+qScore+' de '+qTotal+' acertos ('+Math.round(qScore/qTotal*100)+'%).';
+  document.querySelector('#qImg').style.display='none';document.querySelector('#qOptions').innerHTML='';
+  document.querySelector('#qFeedback').textContent='Recomece para treinar novamente. Revise as fichas para memorizar motor, torque, porta-malas, câmbio e perfil de uso.';
+  document.querySelector('#qNext').textContent='Jogar novamente';document.querySelector('#qNext').onclick=()=>{document.querySelector('#qImg').style.display='';document.querySelector('#qNext').onclick=nextQuiz;startQuiz()};
+ } else {qi++;showQuiz()}
+};
+function nextQuiz(){if(qi>=qOrder.length-1){startQuiz()}else{qi++;showQuiz()}}
+document.querySelector('#qRestart').onclick=()=>{document.querySelector('#qImg').style.display='';document.querySelector('#qNext').onclick=nextQuiz;startQuiz()};
+
 let exam=[],ei=0,score=0,answered=false;
-function startExam(){exam=shuffle([...cars,...cars]).slice(0,10);ei=0;score=0;document.querySelector('#examArea').hidden=false;document.querySelector('#eResult').hidden=true;showExam()}
-function showExam(){answered=false;const c=exam[ei];document.querySelector('#eCount').textContent='Questão '+(ei+1)+' de '+exam.length;document.querySelector('#eProgress').style.width=(ei/exam.length*100)+'%';document.querySelector('#eImg').src=c.image;document.querySelector('#eQuestion').textContent='Identifique o modelo/versão do veículo.';document.querySelector('#eFeedback').textContent='';document.querySelector('#eNext').disabled=true;document.querySelector('#eNext').textContent=ei===exam.length-1?'Ver resultado':'Próxima questão →';const opts=shuffle([c,...shuffle(cars.filter(x=>x.id!==c.id)).slice(0,3)]);document.querySelector('#eOptions').innerHTML=opts.map(o=>'<button class="option" data-id="'+o.id+'">'+o.name+'</button>').join('');document.querySelectorAll('#eOptions .option').forEach(b=>b.onclick=()=>{if(answered)return;answered=true;const ok=b.dataset.id===c.id;if(ok)score++;document.querySelectorAll('#eOptions .option').forEach(x=>{x.disabled=true;if(x.dataset.id===c.id)x.classList.add('correct')});if(!ok)b.classList.add('wrong');document.querySelector('#eFeedback').textContent=ok?'✅ Correto!':'❌ Resposta: '+c.name;document.querySelector('#eNext').disabled=false})}
-document.querySelector('#eNext').onclick=()=>{ei++;if(ei>=exam.length){document.querySelector('#examArea').hidden=true;document.querySelector('#eResult').hidden=false;document.querySelector('#eProgress').style.width='100%';document.querySelector('#eResult').innerHTML='<h2>🏁 Resultado: '+score+' / '+exam.length+'</h2><p>'+Math.round(score/exam.length*100)+'% de acertos</p><p>'+(score>=8?'Ótimo resultado! Revise as fichas para memorizar os detalhes.':'Continue treinando: revise as fichas e tente novamente.')+'</p>';document.querySelector('#eCount').textContent='Prova concluída'}else showExam()};document.querySelector('#eStart').onclick=startExam;
+function startExam(){
+ exam=shuffle(questionBank()).slice(0,15);ei=0;score=0;
+ document.querySelector('#examArea').hidden=false;document.querySelector('#eResult').hidden=true;showExam();
+}
+function showExam(){
+ answered=false;const q=exam[ei],c=q.car;
+ document.querySelector('#eCount').textContent='Questão '+(ei+1)+' de '+exam.length;
+ document.querySelector('#eProgress').style.width=(ei/exam.length*100)+'%';
+ document.querySelector('#eImg').src=c.image;document.querySelector('#eQuestion').textContent=q.q;
+ document.querySelector('#eFeedback').textContent='';document.querySelector('#eNext').disabled=true;
+ document.querySelector('#eNext').textContent=ei===exam.length-1?'Ver resultado':'Próxima questão →';
+ document.querySelector('#eOptions').innerHTML=optionsFor(q).map(o=>'<button class="option" data-answer="'+encodeURIComponent(o)+'">'+o+'</button>').join('');
+ document.querySelectorAll('#eOptions .option').forEach(b=>b.onclick=()=>{
+  if(answered)return;answered=true;const picked=decodeURIComponent(b.dataset.answer),ok=picked===q.answer;if(ok)score++;
+  document.querySelectorAll('#eOptions .option').forEach(x=>{x.disabled=true;if(decodeURIComponent(x.dataset.answer)===q.answer)x.classList.add('correct')});
+  if(!ok)b.classList.add('wrong');document.querySelector('#eFeedback').textContent=ok?'✅ Correto!':'❌ Resposta correta: '+q.answer;
+  document.querySelector('#eNext').disabled=false;
+ });
+}
+document.querySelector('#eNext').onclick=()=>{
+ ei++;if(ei>=exam.length){
+  document.querySelector('#examArea').hidden=true;document.querySelector('#eResult').hidden=false;document.querySelector('#eProgress').style.width='100%';
+  document.querySelector('#eResult').innerHTML='<h2>🏁 Resultado: '+score+' / '+exam.length+'</h2><p>'+Math.round(score/exam.length*100)+'% de acertos</p><p>'+(score>=12?'Ótimo resultado! Continue revisando as fichas técnicas.':'Revise as fichas e tente novamente. A prova mistura identificação, motor, torque, câmbio, porta-malas e perfil de uso.')+'</p>';
+  document.querySelector('#eCount').textContent='Prova concluída';
+ }else showExam();
+};
+document.querySelector('#eStart').onclick=startExam;
 renderCars();startQuiz();
 </script></body></html>
