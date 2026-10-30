@@ -5,9 +5,9 @@
 </style></head><body>
 <header><div class="wrap"><div class="brand">Estuda<span>Car</span> 🚘</div><p>Treine identificação sem dicas da marca, ficha técnica, FIPE e argumentos de venda.</p></div></header>
 <main class="wrap"><nav class="tabs"><button class="tab active" data-tab="catalog">🚗 Catálogo e fichas</button><button class="tab" data-tab="quiz">🎯 Quiz técnico</button><button class="tab" data-tab="exam">📝 Prova</button></nav>
-<section id="catalog" class="panel active"><div class="callout">💡 Estude primeiro os diferenciais e depois teste sua memória no quiz. Valores de FIPE abaixo são referências anteriores e precisam ser confirmados pelo código FIPE e mês antes de falar com o cliente.</div><div class="grid" id="cars"></div></section>
-<section id="quiz" class="panel"><div class="quiz"><div class="quiztop"><strong>🎯 Qual é o modelo deste carro?</strong><span id="qCount" class="pill">Pergunta 1</span></div><div class="progress"><span id="qProgress"></span></div><img id="qImg" class="questionimg" alt="Foto do veículo"><div id="qVehicleContext" class="callout" hidden></div><h2 id="qTitle">Identifique o veículo</h2><div id="qOptions" class="options"></div><div id="qFeedback" class="feedback"></div><div class="actions"><button class="btn primary" id="qNext" disabled>Próxima →</button><button class="btn dark" id="qRestart">Recomeçar</button></div></div></section>
-<section id="exam" class="panel"><div class="quiz"><div class="quiztop"><strong>📝 Prova de modelos</strong><span id="eCount" class="pill">10 questões</span></div><p>Responda 15 questões aleatórias com quatro alternativas. Treine modelo, motor, potência, torque, câmbio, porta-malas, categoria, uso, combustível, tração, FIPE e argumentos de venda.</p><div class="progress"><span id="eProgress"></span></div><div id="examArea"><img id="eImg" class="questionimg" alt="Foto do veículo"><div id="eVehicleContext" class="callout" hidden></div><h2 id="eQuestion"></h2><div id="eOptions" class="options"></div><div id="eFeedback" class="feedback"></div><button id="eNext" class="btn primary" disabled>Próxima questão →</button></div><div id="eResult" hidden></div><div class="actions"><button id="eStart" class="btn dark">Começar / refazer prova</button></div></div></section></main>
+<section id="catalog" class="panel active"><div class="callout">💡 Escolha <b>Treinar este modelo</b> para estudar apenas um carro. Use <b>Quiz geral completo</b> para responder todas as perguntas de todos os modelos. Valores FIPE são referências históricas e devem ser confirmados pelo código FIPE e mês.</div><div class="actions" style="margin:14px 0 18px"><button class="btn primary" onclick="startQuiz(null,true)">🧠 Quiz geral completo — todos os carros</button><button class="btn dark" onclick="startExam(true)">📝 Prova completa — todas as questões</button></div><div class="grid" id="cars"></div></section>
+<section id="quiz" class="panel"><div class="quiz"><div class="quiztop"><strong id="quizHeading">🎯 Quiz técnico</strong><span id="qCount" class="pill">Pergunta 1</span></div><div class="progress"><span id="qProgress"></span></div><img id="qImg" class="questionimg" alt="Foto do veículo"><div id="qVehicleContext" class="callout" hidden></div><h2 id="qTitle">Identifique o veículo</h2><div id="qOptions" class="options"></div><div id="qFeedback" class="feedback"></div><div class="actions"><button class="btn primary" id="qNext" disabled>Próxima →</button><button class="btn dark" id="qRestart">Recomeçar</button></div></div></section>
+<section id="exam" class="panel"><div class="quiz"><div class="quiztop"><strong>📝 Prova de modelos</strong><span id="eCount" class="pill">10 questões</span></div><p>Escolha uma prova rápida de 20 questões aleatórias ou uma prova completa com todas as perguntas cadastradas para todos os modelos.</p><div class="actions"><button class="btn primary" onclick="startExam(true)">📚 Prova completa (todos os modelos)</button><button class="btn dark" onclick="startExam(false)">🎲 Prova rápida (20 questões)</button></div><div class="progress"><span id="eProgress"></span></div><div id="examArea"><img id="eImg" class="questionimg" alt="Foto do veículo"><div id="eVehicleContext" class="callout" hidden></div><h2 id="eQuestion"></h2><div id="eOptions" class="options"></div><div id="eFeedback" class="feedback"></div><button id="eNext" class="btn primary" disabled>Próxima questão →</button></div><div id="eResult" hidden></div><div class="actions"><button id="eStart" class="btn dark">Começar / refazer prova</button></div></div></section></main>
 <footer>EstudaCar • As imagens são referências externas e podem representar outra unidade/ano. Confirme sempre versão, chassi, equipamentos, quilometragem e FIPE atual.</footer>
 <script>
 const cars=[
@@ -20,7 +20,7 @@ const cars=[
 ];
 const money=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
 const diff=c=>c.price-c.fipe;const signed=n=>(n>0?'+':'−')+money(Math.abs(n));
-function renderCars(){document.querySelector('#cars').innerHTML=cars.map((c,i)=>'<article class="card"><img class="carimg" src="'+c.image+'" alt="'+c.name+'" loading="lazy"><div class="body"><span class="pill">📅 '+c.year+'</span><h3>'+c.name+'</h3><div class="price">'+money(c.price)+'</div><div class="muted">FIPE de referência: '+money(c.fipe)+'</div><div class="muted">Diferença anúncio − FIPE: <b>'+signed(diff(c))+'</b></div><div class="muted">Foto: <a href="'+c.source+'" target="_blank" rel="noopener">'+c.credit+' ↗</a></div><div class="actions"><button class="btn primary" onclick="toggleDetail('+i+')">📋 Ficha completa</button><button class="btn dark" onclick="startQuiz('+i+')">🎯 Treinar modelo</button></div></div><div class="detail" id="detail'+i+'"><div class="warning">⚠️ '+c.fipeNote+' A diferença é apenas matemática entre o preço anunciado e a referência informada, não uma avaliação oficial.</div><h4>⚙️ Motor e transmissão</h4><div class="specgrid">'+[['Motor',c.engine],['Cilindrada',c.cc],['Potência',c.power],['Torque',c.torque],['Combustível',c.fuel],['Câmbio',c.gear],['Tração',c.drive],['Porta-malas',c.trunk],['Tanque',c.tank],['Lugares',c.seats],['Altura do solo',c.ground]].map(x=>'<div class="spec"><b>'+x[0]+'</b><br>'+x[1]+'</div>').join('')+'</div><h4>💬 Argumentos de venda</h4><ul>'+c.selling.map(x=>'<li>'+x+'</li>').join('')+'</ul><h4>🔎 O que conferir</h4><ul>'+c.care.map(x=>'<li>'+x+'</li>').join('')+'</ul><div class="callout"><b>Resumo:</b> '+c.highlight+'</div></div></article>').join('')}
+function renderCars(){document.querySelector('#cars').innerHTML=cars.map((c,i)=>'<article class="card"><img class="carimg" src="'+c.image+'" alt="'+c.name+'" loading="lazy"><div class="body"><span class="pill">📅 '+c.year+'</span><h3>'+c.name+'</h3><div class="price">'+money(c.price)+'</div><div class="muted">FIPE de referência: '+money(c.fipe)+'</div><div class="muted">Diferença anúncio − FIPE: <b>'+signed(diff(c))+'</b></div><div class="muted">Foto: <a href="'+c.source+'" target="_blank" rel="noopener">'+c.credit+' ↗</a></div><div class="actions"><button class="btn primary" onclick="toggleDetail('+i+')">📋 Ficha completa</button><button class="btn dark" onclick="startQuiz('+i+',false)">🎯 Treinar modelo</button></div></div><div class="detail" id="detail'+i+'"><div class="warning">⚠️ '+c.fipeNote+' A diferença é apenas matemática entre o preço anunciado e a referência informada, não uma avaliação oficial.</div><h4>⚙️ Motor e transmissão</h4><div class="specgrid">'+[['Motor',c.engine],['Cilindrada',c.cc],['Potência',c.power],['Torque',c.torque],['Combustível',c.fuel],['Câmbio',c.gear],['Tração',c.drive],['Porta-malas',c.trunk],['Tanque',c.tank],['Lugares',c.seats],['Altura do solo',c.ground]].map(x=>'<div class="spec"><b>'+x[0]+'</b><br>'+x[1]+'</div>').join('')+'</div><h4>💬 Argumentos de venda</h4><ul>'+c.selling.map(x=>'<li>'+x+'</li>').join('')+'</ul><h4>🔎 O que conferir</h4><ul>'+c.care.map(x=>'<li>'+x+'</li>').join('')+'</ul><div class="callout"><b>Resumo:</b> '+c.highlight+'</div></div></article>').join('')}
 function toggleDetail(i){document.querySelector('#detail'+i).classList.toggle('open')}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab))});
 
@@ -66,6 +66,8 @@ function buildQuestionBank(){
   qs.push({car:c,type:'tank',q:'Qual é a capacidade aproximada do tanque de combustível?',answer:c.tank,options:uniqueValues([...cars.map(x=>x.tank),...typePools.tank]),explain:'A capacidade indicada é uma referência e deve ser validada para a versão exata.'});
   qs.push({car:c,type:'seats',q:'Quantos ocupantes este veículo acomoda, conforme a ficha de referência?',answer:c.seats+' lugares',options:typePools.seats,explain:'Confirme a lotação no documento e considere cadeirinhas e bagagem no uso familiar.'});
   qs.push({car:c,type:'fipe',q:'Pela referência FIPE registrada nesta ficha, qual é a diferença entre preço anunciado e FIPE?',answer:money(c.price-c.fipe)+' ('+(c.price>=c.fipe?'acima':'abaixo')+' da FIPE)',options:cars.map(x=>money(x.price-x.fipe)+' ('+(x.price>=x.fipe?'acima':'abaixo')+' da FIPE)'),explain:'Valores são referências anteriores, não uma consulta FIPE atual. Confirme código FIPE e mês antes de negociar.'});
+   qs.push({car:c,type:'price',q:'Qual é o preço anunciado deste veículo?',answer:money(c.price),options:uniqueValues(cars.map(x=>money(x.price))),explain:'Preço do anúncio usado nesta ficha; confirme se continua vigente e se há condições especiais.'});
+   qs.push({car:c,type:'cc',q:'Qual é a cilindrada indicada na ficha técnica?',answer:c.cc,options:uniqueValues(cars.map(x=>x.cc)),explain:'A cilindrada é o volume total dos cilindros. Não confunda 1.0, 1.3 e 1.6 com potência ou torque.'});
   qs.push({car:c,type:'sales',q:'Qual argumento de venda está registrado para este veículo?',answer:c.selling[0],options:cars.map(x=>x.selling[0]),explain:'Use argumentos verdadeiros e relevantes para a necessidade do cliente; não prometa algo que não foi verificado.'});
  });
  return qs;
@@ -81,11 +83,25 @@ function optionsFor(q){
  return shuffle([q.answer,...chosen]).slice(0,4);
 }
 let qi=0,qAnswered=false,qOrder=[],qScore=0,qTotal=0,quizStarted=false;
-function startQuiz(){
+let currentQuizMode={carId:null,full:false};
+function startQuiz(carIndex=null,full=false){
  document.querySelector('#qImg').style.display='';
  document.querySelector('#qNext').onclick=handleQuizNext;
  document.querySelector('[data-tab="quiz"]').click();
- qOrder=shuffle(buildQuestionBank()).slice(0,15);qi=0;qScore=0;qTotal=qOrder.length;quizStarted=true;showQuiz();
+ const bank=buildQuestionBank();
+ currentQuizMode={carId:Number.isInteger(carIndex)?cars[carIndex]?.id:null,full:!!full};
+ if(currentQuizMode.carId){
+   const selected=cars.find(c=>c.id===currentQuizMode.carId);
+   qOrder=bank.filter(q=>q.car.id===selected.id);
+   document.querySelector('#quizHeading').textContent='🎯 Treinamento: '+selected.name+' • '+selected.year;
+ } else if(full){
+   qOrder=shuffle(bank);
+   document.querySelector('#quizHeading').textContent='🧠 Quiz geral completo — todos os modelos';
+ } else {
+   qOrder=shuffle(bank).slice(0,20);
+   document.querySelector('#quizHeading').textContent='🎯 Quiz técnico misto — 20 questões';
+ }
+ qi=0;qScore=0;qTotal=qOrder.length;quizStarted=true;showQuiz();
 }
 function showQuiz(){
  qAnswered=false;const q=qOrder[qi],c=q.car;
@@ -112,14 +128,16 @@ function handleQuizNext(){
   document.querySelector('#qTitle').textContent='🏁 Resultado: '+qScore+' de '+qTotal+' ('+Math.round(qScore/qTotal*100)+'%).';
   document.querySelector('#qImg').style.display='none';document.querySelector('#qOptions').innerHTML='';
   document.querySelector('#qFeedback').textContent='A prova mistura identificação, motor, potência, torque, câmbio, porta-malas, categoria, perfil de uso, combustível, tração, ano/modelo, tanque, lotação, FIPE e argumentos de venda.';
-  document.querySelector('#qNext').textContent='Jogar novamente';document.querySelector('#qNext').onclick=startQuiz;
+  document.querySelector('#qNext').textContent='Jogar novamente';document.querySelector('#qNext').onclick=()=>startQuiz(currentQuizMode.carId?cars.findIndex(c=>c.id===currentQuizMode.carId):null,currentQuizMode.full);
  } else {qi++;showQuiz()}
 }
 document.querySelector('#qRestart').textContent='Começar / recomeçar quiz';
-document.querySelector('#qRestart').onclick=startQuiz;
+document.querySelector('#qRestart').onclick=()=>startQuiz(currentQuizMode.carId?cars.findIndex(c=>c.id===currentQuizMode.carId):null,currentQuizMode.full);
 let exam=[],ei=0,score=0,answered=false;
-function startExam(){
- exam=shuffle(buildQuestionBank()).slice(0,15);ei=0;score=0;
+let examCompleteMode=false;
+function startExam(complete=true){
+ examCompleteMode=!!complete;
+ const bank=buildQuestionBank();exam=complete?shuffle(bank):shuffle(bank).slice(0,20);ei=0;score=0;
  document.querySelector('#examArea').hidden=false;document.querySelector('#eResult').hidden=true;showExam();
 }
 function showExam(){
@@ -148,6 +166,6 @@ document.querySelector('#eNext').onclick=()=>{
   document.querySelector('#eCount').textContent='Prova concluída';
  }else showExam();
 };
-document.querySelector('#eStart').onclick=startExam;
+document.querySelector('#eStart').textContent='Refazer esta prova';document.querySelector('#eStart').onclick=()=>startExam(examCompleteMode);
 renderCars();
 </script></body></html>
