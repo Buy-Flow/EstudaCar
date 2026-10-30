@@ -47,7 +47,7 @@ function questionBank(){
   qs.push({car:c,type:'use',q:'Qual perfil de uso combina melhor com este veículo?',answer:meta.use,options:Object.values(categoryById).map(x=>x.use)});
   qs.push({car:c,type:'fuel',q:'Qual é o combustível deste veículo?',answer:c.fuel,options:cars.map(x=>x.fuel)});
   qs.push({car:c,type:'power',q:'Qual é a potência indicada para esta versão?',answer:c.power,options:cars.map(x=>x.power)});
-  qs.push({car:c,type:'drive',q:'Qual é a tração indicada para este veículo?',answer:meta.drive,options:Object.values(categoryById).map(x=>x.drive)});
+  qs.push({car:c,type:'year',q:'Qual é o ano/modelo informado no anúncio deste veículo?',answer:c.year,options:cars.map(x=>x.year)});
  });
  return qs;
 }
@@ -62,6 +62,8 @@ function optionsFor(q){
 }
 let qi=0,qAnswered=false,qOrder=[],qScore=0,qTotal=0;
 function startQuiz(){
+ document.querySelector('#qImg').style.display='';
+ document.querySelector('#qNext').onclick=handleQuizNext;
  document.querySelector('[data-tab="quiz"]').click();
  qOrder=shuffle(questionBank());qi=0;qScore=0;qTotal=qOrder.length;showQuiz();
 }
@@ -88,16 +90,15 @@ function showQuiz(){
   document.querySelector('#qNext').disabled=false;
  });
 }
-document.querySelector('#qNext').onclick=()=>{
+function handleQuizNext(){
  if(qi>=qOrder.length-1){
   document.querySelector('#qTitle').textContent='🏁 Quiz concluído: '+qScore+' de '+qTotal+' acertos ('+Math.round(qScore/qTotal*100)+'%).';
   document.querySelector('#qImg').style.display='none';document.querySelector('#qOptions').innerHTML='';
   document.querySelector('#qFeedback').textContent='Recomece para treinar novamente. Revise as fichas para memorizar motor, torque, porta-malas, câmbio e perfil de uso.';
-  document.querySelector('#qNext').textContent='Jogar novamente';document.querySelector('#qNext').onclick=()=>{document.querySelector('#qImg').style.display='';document.querySelector('#qNext').onclick=nextQuiz;startQuiz()};
+  document.querySelector('#qNext').textContent='Jogar novamente';document.querySelector('#qNext').onclick=startQuiz;
  } else {qi++;showQuiz()}
-};
-function nextQuiz(){if(qi>=qOrder.length-1){startQuiz()}else{qi++;showQuiz()}}
-document.querySelector('#qRestart').onclick=()=>{document.querySelector('#qImg').style.display='';document.querySelector('#qNext').onclick=nextQuiz;startQuiz()};
+}
+document.querySelector('#qRestart').onclick=startQuiz;
 
 let exam=[],ei=0,score=0,answered=false;
 function startExam(){
