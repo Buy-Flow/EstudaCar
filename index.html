@@ -65,7 +65,6 @@ function buildQuestionBank(){
   qs.push({car:c,type:'year',q:'Qual é o ano/modelo informado no anúncio?',answer:c.year,options:uniqueValues([...cars.map(x=>x.year),'2023/2024','2024/2025','2025/2026']),explain:'O ano/modelo correto é essencial para consultar a FIPE. No caso desta ficha, confirme o dado no documento.'});
   qs.push({car:c,type:'tank',q:'Qual é a capacidade aproximada do tanque de combustível?',answer:c.tank,options:uniqueValues([...cars.map(x=>x.tank),...typePools.tank]),explain:'A capacidade indicada é uma referência e deve ser validada para a versão exata.'});
   qs.push({car:c,type:'seats',q:'Quantos ocupantes este veículo acomoda, conforme a ficha de referência?',answer:c.seats+' lugares',options:typePools.seats,explain:'Confirme a lotação no documento e considere cadeirinhas e bagagem no uso familiar.'});
-  qs.push({car:c,type:'fipe',q:'Pela referência FIPE registrada nesta ficha, qual é a diferença entre preço anunciado e FIPE?',answer:money(c.price-c.fipe)+' ('+(c.price>=c.fipe?'acima':'abaixo')+' da FIPE)',options:cars.map(x=>money(x.price-x.fipe)+' ('+(x.price>=x.fipe?'acima':'abaixo')+' da FIPE)'),explain:'Valores são referências anteriores, não uma consulta FIPE atual. Confirme código FIPE e mês antes de negociar.'});
    qs.push({car:c,type:'price',q:'Qual é o preço anunciado deste veículo?',answer:money(c.price),options:uniqueValues(cars.map(x=>money(x.price))),explain:'Preço do anúncio usado nesta ficha; confirme se continua vigente e se há condições especiais.'});
    qs.push({car:c,type:'cc',q:'Qual é a cilindrada indicada na ficha técnica?',answer:c.cc,options:uniqueValues(cars.map(x=>x.cc)),explain:'A cilindrada é o volume total dos cilindros. Não confunda 1.0, 1.3 e 1.6 com potência ou torque.'});
   qs.push({car:c,type:'sales',q:'Qual argumento de venda está registrado para este veículo?',answer:c.selling[0],options:cars.map(x=>x.selling[0]),explain:'Use argumentos verdadeiros e relevantes para a necessidade do cliente; não prometa algo que não foi verificado.'});
@@ -110,7 +109,7 @@ function showQuiz(){
  document.querySelector('#qImg').src=c.image;document.querySelector('#qImg').alt='Foto do veículo para identificação';
  const qContext=document.querySelector('#qVehicleContext');
  qContext.hidden=q.type==='model';
- qContext.innerHTML=q.type==='model'?'':'<span class="vehicle-label">🚘 VEÍCULO DA PERGUNTA TÉCNICA</span><strong>'+c.name+'</strong><br><span>Ano/modelo: '+c.year+'</span><br><span>Use o modelo e a versão acima para responder.</span>';
+ qContext.innerHTML=q.type==='model'?'':'<span class="vehicle-label">🚘 VEÍCULO DA PERGUNTA TÉCNICA</span><strong>'+c.name+'</strong><br><span>📅 Ano/modelo: '+c.year+'</span><br><span class="vehicle-price">💰 Preço anunciado: '+money(c.price)+'</span><br><span>Use o modelo e a versão acima para responder.</span>';
  document.querySelector('#qTitle').textContent=(q.type==='model'?'':('🚘 '+c.name+' • '+c.year+' — '))+q.q;document.querySelector('#qFeedback').textContent='';
  document.querySelector('#qNext').disabled=true;document.querySelector('#qNext').textContent=qi===qOrder.length-1?'Ver resultado':'Próxima →';
  document.querySelector('#qOptions').innerHTML=optionsFor(q).map(o=>'<button class="option" data-answer="'+encodeURIComponent(o)+'">'+o+'</button>').join('');
@@ -147,7 +146,7 @@ function showExam(){
  document.querySelector('#eImg').src=c.image;
  const eContext=document.querySelector('#eVehicleContext');
  eContext.hidden=q.type==='model';
- eContext.innerHTML=q.type==='model'?'':'<span class="vehicle-label">🚘 VEÍCULO DA QUESTÃO TÉCNICA</span><strong>'+c.name+'</strong><br><span>Ano/modelo: '+c.year+'</span><br><span>Use o modelo e a versão acima para responder.</span>';
+ eContext.innerHTML=q.type==='model'?'':'<span class="vehicle-label">🚘 VEÍCULO DA QUESTÃO TÉCNICA</span><strong>'+c.name+'</strong><br><span>📅 Ano/modelo: '+c.year+'</span><br><span class="vehicle-price">💰 Preço anunciado: '+money(c.price)+'</span><br><span>Use o modelo e a versão acima para responder.</span>';
  document.querySelector('#eQuestion').textContent=(q.type==='model'?'':('🚘 '+c.name+' • '+c.year+' — '))+q.q;
  document.querySelector('#eFeedback').textContent='';document.querySelector('#eNext').disabled=true;
  document.querySelector('#eNext').textContent=ei===exam.length-1?'Ver resultado':'Próxima questão →';
