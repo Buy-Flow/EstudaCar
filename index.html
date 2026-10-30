@@ -95,7 +95,7 @@ function showQuiz(){
  const qContext=document.querySelector('#qVehicleContext');
  qContext.hidden=q.type==='model';
  qContext.innerHTML=q.type==='model'?'':'<span class="vehicle-label">🚘 VEÍCULO DA PERGUNTA TÉCNICA</span><strong>'+c.name+'</strong><br><span>Ano/modelo: '+c.year+'</span><br><span>Use o modelo e a versão acima para responder.</span>';
- document.querySelector('#qTitle').textContent=q.q;document.querySelector('#qFeedback').textContent='';
+ document.querySelector('#qTitle').textContent=(q.type==='model'?'':('🚘 '+c.name+' • '+c.year+' — '))+q.q;document.querySelector('#qFeedback').textContent='';
  document.querySelector('#qNext').disabled=true;document.querySelector('#qNext').textContent=qi===qOrder.length-1?'Ver resultado':'Próxima →';
  document.querySelector('#qOptions').innerHTML=optionsFor(q).map(o=>'<button class="option" data-answer="'+encodeURIComponent(o)+'">'+o+'</button>').join('');
  document.querySelectorAll('#qOptions .option').forEach(b=>b.onclick=()=>{
@@ -130,7 +130,7 @@ function showExam(){
  const eContext=document.querySelector('#eVehicleContext');
  eContext.hidden=q.type==='model';
  eContext.innerHTML=q.type==='model'?'':'<span class="vehicle-label">🚘 VEÍCULO DA QUESTÃO TÉCNICA</span><strong>'+c.name+'</strong><br><span>Ano/modelo: '+c.year+'</span><br><span>Use o modelo e a versão acima para responder.</span>';
- document.querySelector('#eQuestion').textContent=q.q;
+ document.querySelector('#eQuestion').textContent=(q.type==='model'?'':('🚘 '+c.name+' • '+c.year+' — '))+q.q;
  document.querySelector('#eFeedback').textContent='';document.querySelector('#eNext').disabled=true;
  document.querySelector('#eNext').textContent=ei===exam.length-1?'Ver resultado':'Próxima questão →';
  document.querySelector('#eOptions').innerHTML=optionsFor(q).map(o=>'<button class="option" data-answer="'+encodeURIComponent(o)+'">'+o+'</button>').join('');
