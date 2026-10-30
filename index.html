@@ -6,8 +6,8 @@
 <header><div class="wrap"><div class="brand">Estuda<span>Car</span> 🚘</div><p>Treine identificação sem dicas da marca, ficha técnica, FIPE e argumentos de venda.</p></div></header>
 <main class="wrap"><nav class="tabs"><button class="tab active" data-tab="catalog">🚗 Catálogo e fichas</button><button class="tab" data-tab="quiz">🎯 Quiz técnico</button><button class="tab" data-tab="exam">📝 Prova</button></nav>
 <section id="catalog" class="panel active"><div class="callout">💡 Estude primeiro os diferenciais e depois teste sua memória no quiz. Valores de FIPE abaixo são referências anteriores e precisam ser confirmados pelo código FIPE e mês antes de falar com o cliente.</div><div class="grid" id="cars"></div></section>
-<section id="quiz" class="panel"><div class="quiz"><div class="quiztop"><strong>🎯 Qual é o modelo deste carro?</strong><span id="qCount" class="pill">Pergunta 1</span></div><div class="progress"><span id="qProgress"></span></div><img id="qImg" class="questionimg" alt="Foto do veículo"><h2 id="qTitle">Identifique o veículo</h2><div id="qOptions" class="options"></div><div id="qFeedback" class="feedback"></div><div class="actions"><button class="btn primary" id="qNext" disabled>Próxima →</button><button class="btn dark" id="qRestart">Recomeçar</button></div></div></section>
-<section id="exam" class="panel"><div class="quiz"><div class="quiztop"><strong>📝 Prova de modelos</strong><span id="eCount" class="pill">10 questões</span></div><p>Responda 15 questões aleatórias com quatro alternativas. Treine modelo, motor, potência, torque, câmbio, porta-malas, categoria, uso, combustível, tração, FIPE e argumentos de venda.</p><div class="progress"><span id="eProgress"></span></div><div id="examArea"><img id="eImg" class="questionimg" alt="Foto do veículo"><h2 id="eQuestion"></h2><div id="eOptions" class="options"></div><div id="eFeedback" class="feedback"></div><button id="eNext" class="btn primary" disabled>Próxima questão →</button></div><div id="eResult" hidden></div><div class="actions"><button id="eStart" class="btn dark">Começar / refazer prova</button></div></div></section></main>
+<section id="quiz" class="panel"><div class="quiz"><div class="quiztop"><strong>🎯 Qual é o modelo deste carro?</strong><span id="qCount" class="pill">Pergunta 1</span></div><div class="progress"><span id="qProgress"></span></div><img id="qImg" class="questionimg" alt="Foto do veículo"><div id="qVehicleContext" class="callout" hidden></div><h2 id="qTitle">Identifique o veículo</h2><div id="qOptions" class="options"></div><div id="qFeedback" class="feedback"></div><div class="actions"><button class="btn primary" id="qNext" disabled>Próxima →</button><button class="btn dark" id="qRestart">Recomeçar</button></div></div></section>
+<section id="exam" class="panel"><div class="quiz"><div class="quiztop"><strong>📝 Prova de modelos</strong><span id="eCount" class="pill">10 questões</span></div><p>Responda 15 questões aleatórias com quatro alternativas. Treine modelo, motor, potência, torque, câmbio, porta-malas, categoria, uso, combustível, tração, FIPE e argumentos de venda.</p><div class="progress"><span id="eProgress"></span></div><div id="examArea"><img id="eImg" class="questionimg" alt="Foto do veículo"><div id="eVehicleContext" class="callout" hidden></div><h2 id="eQuestion"></h2><div id="eOptions" class="options"></div><div id="eFeedback" class="feedback"></div><button id="eNext" class="btn primary" disabled>Próxima questão →</button></div><div id="eResult" hidden></div><div class="actions"><button id="eStart" class="btn dark">Começar / refazer prova</button></div></div></section></main>
 <footer>EstudaCar • As imagens são referências externas e podem representar outra unidade/ano. Confirme sempre versão, chassi, equipamentos, quilometragem e FIPE atual.</footer>
 <script>
 const cars=[
@@ -92,6 +92,9 @@ function showQuiz(){
  document.querySelector('#qCount').textContent='Pergunta '+(qi+1)+' / '+qOrder.length+' • Acertos: '+qScore;
  document.querySelector('#qProgress').style.width=((qi+1)/qOrder.length*100)+'%';
  document.querySelector('#qImg').src=c.image;document.querySelector('#qImg').alt='Foto do veículo para identificação';
+ const qContext=document.querySelector('#qVehicleContext');
+ qContext.hidden=q.type==='model';
+ qContext.textContent=q.type==='model'?'':'🚘 Veículo desta pergunta: '+c.name+' • Ano/modelo '+c.year+'. Use estes dados para responder à pergunta técnica.';
  document.querySelector('#qTitle').textContent=q.q;document.querySelector('#qFeedback').textContent='';
  document.querySelector('#qNext').disabled=true;document.querySelector('#qNext').textContent=qi===qOrder.length-1?'Ver resultado':'Próxima →';
  document.querySelector('#qOptions').innerHTML=optionsFor(q).map(o=>'<button class="option" data-answer="'+encodeURIComponent(o)+'">'+o+'</button>').join('');
@@ -123,7 +126,11 @@ function showExam(){
  answered=false;const q=exam[ei],c=q.car;
  document.querySelector('#eCount').textContent='Questão '+(ei+1)+' de '+exam.length;
  document.querySelector('#eProgress').style.width=(ei/exam.length*100)+'%';
- document.querySelector('#eImg').src=c.image;document.querySelector('#eQuestion').textContent=q.q;
+ document.querySelector('#eImg').src=c.image;
+ const eContext=document.querySelector('#eVehicleContext');
+ eContext.hidden=q.type==='model';
+ eContext.textContent=q.type==='model'?'':'🚘 Veículo desta questão: '+c.name+' • Ano/modelo '+c.year+'. Use estes dados para responder à pergunta técnica.';
+ document.querySelector('#eQuestion').textContent=q.q;
  document.querySelector('#eFeedback').textContent='';document.querySelector('#eNext').disabled=true;
  document.querySelector('#eNext').textContent=ei===exam.length-1?'Ver resultado':'Próxima questão →';
  document.querySelector('#eOptions').innerHTML=optionsFor(q).map(o=>'<button class="option" data-answer="'+encodeURIComponent(o)+'">'+o+'</button>').join('');
